@@ -74,8 +74,6 @@ public class ListCerts extends CMSServlet {
     private final static String USE_CLIENT_FILTER = "useClientFilter";
     private final static String ALLOWED_CLIENT_FILTERS = "allowedClientFilters";
 
-    private ICertificateRepository mCertDB = null;
-    private X500Name mAuthName = null;
     private String mFormPath = null;
     private boolean mReverse = false;
     private boolean mHardJumpTo = false; //jump to the end
@@ -101,13 +99,6 @@ public class ListCerts extends CMSServlet {
         super.init(sc);
         // override success to render own template.
         mTemplates.remove(ICMSRequest.SUCCESS);
-
-        if (mAuthority instanceof ICertificateAuthority) {
-            ICertificateAuthority ca = (ICertificateAuthority) mAuthority;
-
-            mCertDB = ca.getCertificateRepository();
-            mAuthName = ca.getX500Name();
-        }
 
         mFormPath = "/" + mAuthority.getId() + "/" + TPL_FILE;
         if (mOutputTemplatePath != null)
@@ -390,7 +381,10 @@ public class ListCerts extends CMSServlet {
         } else
             pSize = maxCount;
 
-        ICertRecordList list = mCertDB.findCertRecordsInList(
+        ICertificateAuthority targetCA = certAuthority.getSubCA(req.getParameter("caRef"));
+        ICertificateRepository certDB = targetCA.getCertificateRepository();
+
+        ICertRecordList list = certDB.findCertRecordsInList(
                 filter, (String[]) null, jumpTo, mHardJumpTo, "serialno",
                 pSize);
         // retrive maxCount + 1 entries
@@ -403,7 +397,7 @@ public class ListCerts extends CMSServlet {
         if (!serialToVal.equals(MINUS_ONE)) {
             // if user specify a range, we need to
             // calculate the totalRecordCount
-            tolist = mCertDB.findCertRecordsInList(
+            tolist = certDB.findCertRecordsInList(
                         filter,
                         (String[]) null, serialTo,
                         "serialno", maxCount);
@@ -509,11 +503,14 @@ public class ListCerts extends CMSServlet {
             nextRec = e.nextElement();
         }
 
+        header.addStringValue("caRef", req.getParameter("caRef"));
         header.addStringValue("op", req.getParameter("op"));
         if (revokeAll != null)
             header.addStringValue("revokeAll", revokeAll);
-        if (mAuthName != null)
-            header.addStringValue("issuerName", mAuthName.toString());
+
+        X500Name issuerName = targetCA.getX500Name();
+        if (issuerName != null)
+            header.addStringValue("issuerName", issuerName.toString());
         if (!serialToVal.equals(MINUS_ONE))
             header.addStringValue("serialTo", serialToVal.toString());
         header.addStringValue("serviceURL", req.getRequestURI());

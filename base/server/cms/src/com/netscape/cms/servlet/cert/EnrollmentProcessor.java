@@ -30,6 +30,7 @@ import com.netscape.certsrv.base.EBaseException;
 import com.netscape.certsrv.base.EPropertyNotFound;
 import com.netscape.certsrv.base.SessionContext;
 import com.netscape.certsrv.cert.CertEnrollmentRequest;
+import com.netscape.certsrv.profile.IEnrollProfile;
 import com.netscape.certsrv.profile.IProfile;
 import com.netscape.certsrv.profile.IProfileAuthenticator;
 import com.netscape.certsrv.profile.IProfileContext;
@@ -146,6 +147,14 @@ public class EnrollmentProcessor extends CertProcessor {
             }
 
             IProfileContext ctx = profile.createContext();
+
+            // insert request path into profile context
+            // (it is used to determine the (sub-)CA.
+            //
+            String caRef = request.getParameter("caRef");
+            if (caRef != null)
+                ctx.set(IEnrollProfile.REQUEST_AUTHORITY_REF, caRef);
+
             CMS.debug("EnrollmentSubmitter: set Inputs into profile Context");
             setInputsIntoContext(data, profile, ctx);
 

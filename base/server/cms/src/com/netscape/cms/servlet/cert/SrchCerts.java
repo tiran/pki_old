@@ -78,8 +78,6 @@ public class SrchCerts extends CMSServlet {
     private final static String CURRENT_TIME = "currentTime";
     private final static int MAX_RESULTS = 1000;
 
-    private ICertificateRepository mCertDB = null;
-    private X500Name mAuthName = null;
     private String mFormPath = null;
     private int mMaxReturns = MAX_RESULTS;
     private int mTimeLimits = 30; /* in seconds */
@@ -114,12 +112,6 @@ public class SrchCerts extends CMSServlet {
                     // do nothing
                 }
             }
-        }
-        if (mAuthority instanceof ICertificateAuthority) {
-            ICertificateAuthority ca = (ICertificateAuthority) mAuthority;
-
-            mCertDB = ca.getCertificateRepository();
-            mAuthName = ca.getX500Name();
         }
 
         mFormPath = "/" + mAuthority.getId() + "/" + TPL_FILE;
@@ -548,7 +540,8 @@ public class SrchCerts extends CMSServlet {
                 timeLimit = Integer.parseInt(timeLimitStr);
 
             String queryCertFilter = buildFilter(req);
-            process(argSet, header, queryCertFilter,
+            ICertificateAuthority targetCA = certAuthority.getSubCA(req.getParameter("caRef"));
+            process(targetCA, argSet, header, queryCertFilter,
                     revokeAll, maxResults, timeLimit, req, resp, locale[0]);
         } catch (NumberFormatException e) {
             log(ILogger.LL_FAILURE, CMS.getLogMessage("BASE_INVALID_NUMBER_FORMAT"));
@@ -584,13 +577,16 @@ public class SrchCerts extends CMSServlet {
     /**
      * Process the key search.
      */
-    private void process(CMSTemplateParams argSet, IArgBlock header,
+    private void process(ICertificateAuthority ca,
+            CMSTemplateParams argSet, IArgBlock header,
             String filter, String revokeAll,
             int maxResults, int timeLimit,
             HttpServletRequest req, HttpServletResponse resp,
             Locale locale)
             throws EBaseException {
         try {
+            ICertificateRepository certDB = ca.getCertificateRepository();
+
             long startTime = CMS.getCurrentDate().getTime();
 
             if (filter.indexOf(CURRENT_TIME, 0) > -1) {
@@ -608,7 +604,7 @@ public class SrchCerts extends CMSServlet {
             }
             CMS.debug("Start searching ... "
                     + "filter=" + filter + " maxreturns=" + maxResults + " timelimit=" + timeLimit);
-            Enumeration<ICertRecord> e = mCertDB.searchCertificates(filter, maxResults, timeLimit);
+            Enumeration<ICertRecord> e = certDB.searchCertificates(filter, maxResults, timeLimit);
 
             int count = 0;
 
@@ -626,9 +622,11 @@ public class SrchCerts extends CMSServlet {
 
             long endTime = CMS.getCurrentDate().getTime();
 
+            header.addStringValue("caRef", req.getParameter("caRef"));
             header.addStringValue("op", req.getParameter("op"));
-            if (mAuthName != null)
-                header.addStringValue("issuerName", mAuthName.toString());
+            X500Name issuerName = ca.getX500Name();
+            if (issuerName != null)
+                header.addStringValue("issuerName", issuerName.toString());
             header.addStringValue("time", Long.toString(endTime - startTime));
             header.addStringValue("serviceURL", req.getRequestURI());
             header.addStringValue("queryFilter", filter);

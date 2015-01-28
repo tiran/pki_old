@@ -106,6 +106,7 @@ function renderDetailsButton(serialNumber)
 	return "<FORM METHOD=post "+
 "ACTION=\""+ "displayBySerial" +"\">\n"+
 "<INPUT TYPE=hidden NAME=\"op\" VALUE=\""+ "displayBySerial" +"\">\n"+
+"<INPUT TYPE=hidden NAME=\"caRef\" VALUE=\"" + (result.header.caRef || "") + "\">\n" +
 "<INPUT TYPE=hidden NAME=\"serialNumber\" VALUE=\""+ "0x"+serialNumber +"\">\n"+
 "<INPUT TYPE=submit VALUE=\"Details\" width=\"72\"></FORM>\n";
 }
@@ -118,6 +119,7 @@ function renderRevokeButton(serialNumberDecimal)
 //"onSubmit=\"return revokeCert("+serialNumberDecimal+");\" "+
 "ACTION=\""+ "reasonToRevoke" +"\">\n"+
 "<INPUT TYPE=hidden NAME=\"op\" VALUE=\""+ "reasonToRevoke" +"\">\n"+
+"<INPUT TYPE=hidden NAME=\"caRef\" VALUE=\"" + (result.header.caRef || "") + "\">\n" +
 "<INPUT TYPE=hidden NAME=\"serialNumber\" VALUE=\""+ serialNumberDecimal +"\">\n"+
 "<INPUT TYPE=hidden NAME=\"revokeAll\" VALUE=\"(&(certRecordId="+serialNumberDecimal+"))\">\n"+
 "<INPUT TYPE=hidden NAME=\"totalRecordCount\" VALUE=\"1\">\n"+

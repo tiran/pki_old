@@ -33,6 +33,7 @@ import com.netscape.certsrv.apps.CMS;
 import com.netscape.certsrv.base.IConfigStore;
 import com.netscape.certsrv.common.NameValuePairs;
 import com.netscape.certsrv.profile.EProfileException;
+import com.netscape.certsrv.profile.IEnrollProfile;
 import com.netscape.certsrv.profile.IProfile;
 import com.netscape.certsrv.property.Descriptor;
 import com.netscape.certsrv.property.EPropertyException;
@@ -403,12 +404,13 @@ public class AuthInfoAccessExtDefault extends EnrollExtDefault {
      */
     public void populate(IRequest request, X509CertInfo info)
             throws EProfileException {
-        AuthInfoAccessExtension ext = createExtension();
+        String caRef = request.getExtDataInString(IEnrollProfile.REQUEST_AUTHORITY_REF);
+        AuthInfoAccessExtension ext = createExtension(caRef);
 
         addExtension(ext.getExtensionId().toString(), ext, info);
     }
 
-    public AuthInfoAccessExtension createExtension() {
+    public AuthInfoAccessExtension createExtension(String caRef) {
         AuthInfoAccessExtension ext = null;
         int num = getNumAds();
 
@@ -433,6 +435,8 @@ public class AuthInfoAccessExtDefault extends EnrollExtDefault {
                             if (hostname != null && port != null)
                                 // location = "http://"+hostname+":"+port+"/ocsp/ee/ocsp";
                                 location = "http://" + hostname + ":" + port + "/ca/ocsp";
+                                if (caRef != null && !caRef.isEmpty())
+                                    location += "?caRef=" + caRef;
                         }
                     }
 

@@ -301,8 +301,10 @@ function displayCertificateRecord(i, cert)
      "<td style='overflow: hidden; white-space: nowrap;'>"+
      "     <font face='PrimaSans BT, Verdana, sans-serif' size='-1'>\n"+
      "   <div style='overflow: hidden; white-space: nowrap;'>"+
-     " <a index='"+i+"' href='/ca/ee/ca/displayBySerial?op=displayBySerial&serialNumber=0x"+
-           cert.serialNumber+"' onmouseover='mouseover(this,event);' "+
+     " <a index='"+i+"' href='/ca/ee/ca/displayBySerial?op=displayBySerial"
+        + "&serialNumber=0x" + cert.serialNumber
+        + (result.header.caRef ? "&caRef=" + result.header.caRef : "")
+        + "' onmouseover='mouseover(this,event);' " +
            "onmouseout='mouseout(this);'>"+
          addEscapes(cert.subject)+"</a></div></font>"+
      "</td>"+

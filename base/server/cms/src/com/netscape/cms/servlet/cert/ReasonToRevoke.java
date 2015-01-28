@@ -65,7 +65,6 @@ public class ReasonToRevoke extends CMSServlet {
     private final static String TPL_FILE = "reasonToRevoke.template";
     private final static String INFO = "ReasonToRevoke";
 
-    private ICertificateRepository mCertDB = null;
     private String mFormPath = null;
     private ICertificateAuthority mCA = null;
     private Random mRandom = null;
@@ -84,10 +83,8 @@ public class ReasonToRevoke extends CMSServlet {
     public void init(ServletConfig sc) throws ServletException {
         super.init(sc);
         mFormPath = "/" + mAuthority.getId() + "/" + TPL_FILE;
-        if (mAuthority instanceof ICertificateAuthority) {
+        if (mAuthority instanceof ICertificateAuthority)
             mCA = (ICertificateAuthority) mAuthority;
-            mCertDB = ((ICertificateAuthority) mAuthority).getCertificateRepository();
-        }
 
         if (mCA != null && mCA.noncesEnabled()) {
             mRandom = new Random();
@@ -221,6 +218,7 @@ public class ReasonToRevoke extends CMSServlet {
             Locale locale)
             throws EBaseException {
 
+        header.addStringValue("caRef", req.getParameter("caRef"));
         header.addStringValue("revokeAll", revokeAll);
         header.addIntegerValue("totalRecordCount", totalRecordCount);
 
@@ -234,12 +232,15 @@ public class ReasonToRevoke extends CMSServlet {
                 }
             }
 
+            ICertificateAuthority targetCA = mCA.getSubCA(req.getParameter("caRef"));
+            ICertificateRepository certDB = targetCA.getCertificateRepository();
+
             /**
-             * ICertRecordList list = mCertDB.findCertRecordsInList(
+             * ICertRecordList list = certDB.findCertRecordsInList(
              * revokeAll, null, totalRecordCount);
              * Enumeration e = list.getCertRecords(0, totalRecordCount - 1);
              **/
-            Enumeration<ICertRecord> e = mCertDB.searchCertificates(revokeAll,
+            Enumeration<ICertRecord> e = certDB.searchCertificates(revokeAll,
                     totalRecordCount, mTimeLimits);
 
             ArrayList<String> noncesList = new ArrayList<String>();

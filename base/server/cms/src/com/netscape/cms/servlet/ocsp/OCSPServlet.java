@@ -35,6 +35,7 @@ import com.netscape.certsrv.apps.CMS;
 import com.netscape.certsrv.authentication.IAuthToken;
 import com.netscape.certsrv.authorization.AuthzToken;
 import com.netscape.certsrv.base.EBaseException;
+import com.netscape.certsrv.ca.ICertificateAuthority;
 import com.netscape.certsrv.common.ICMSRequest;
 import com.netscape.certsrv.ocsp.IOCSPService;
 import com.netscape.certsrv.util.IStatsSubsystem;
@@ -204,7 +205,9 @@ public class OCSPServlet extends CMSServlet {
                     throw new Exception("OCSPServlet: Decoded OCSP request "
                                        + "is empty or malformed");
                 }
-                response = ((IOCSPService) mAuthority).validate(ocspReq);
+                ICertificateAuthority targetCA =
+                    certAuthority.getSubCA(httpReq.getParameter("caRef"));
+                response = ((IOCSPService) targetCA).validate(ocspReq);
             } catch (Exception e) {
                 ;
                 CMS.debug("OCSPServlet: " + e.toString());

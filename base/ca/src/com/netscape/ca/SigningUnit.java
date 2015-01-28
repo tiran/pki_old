@@ -133,6 +133,11 @@ public final class SigningUnit implements ISigningUnit {
 
     public void init(ISubsystem owner, IConfigStore config)
             throws EBaseException {
+        init(owner, config, null);
+    }
+
+    public void init(ISubsystem owner, IConfigStore config, String caHandle)
+            throws EBaseException {
         mOwner = owner;
         mConfig = config;
 
@@ -140,7 +145,10 @@ public final class SigningUnit implements ISigningUnit {
         try {
             mManager = CryptoManager.getInstance();
 
-            mNickname = getNickName();
+            if (caHandle == null)
+                mNickname = getNickName();
+            else
+                mNickname = getNickName() + " " + caHandle;
 
             tokenname = config.getString(PROP_TOKEN_NAME);
             if (tokenname.equalsIgnoreCase(Constants.PR_INTERNAL_TOKEN) ||

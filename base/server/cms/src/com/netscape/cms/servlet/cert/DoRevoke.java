@@ -84,7 +84,6 @@ public class DoRevoke extends CMSServlet {
     private static final long serialVersionUID = 1693115906265904238L;
     private final static String TPL_FILE = "revocationResult.template";
 
-    private ICertificateRepository mCertDB = null;
     private String mFormPath = null;
     private IPublisherProcessor mPublisherProcessor = null;
     private int mTimeLimits = 30; /* in seconds */
@@ -103,9 +102,6 @@ public class DoRevoke extends CMSServlet {
         super.init(sc);
         mFormPath = "/" + mAuthority.getId() + "/" + TPL_FILE;
 
-        if (mAuthority instanceof ICertificateAuthority) {
-            mCertDB = ((ICertificateAuthority) mAuthority).getCertificateRepository();
-        }
         if (mAuthority instanceof ICertAuthority) {
             mPublisherProcessor = ((ICertAuthority) mAuthority).getPublisherProcessor();
         }
@@ -375,6 +371,8 @@ public class DoRevoke extends CMSServlet {
         CMS.debug("DoRevoke: eeSerialNumber: " + eeSerialNumber);
         long startTime = CMS.getCurrentDate().getTime();
 
+        ICertificateAuthority targetCA = certAuthority.getSubCA(req.getParameter("caRef"));
+
         RevocationProcessor processor =
                 new RevocationProcessor(servletConfig.getServletName(), getLocale(req));
 
@@ -395,9 +393,9 @@ public class DoRevoke extends CMSServlet {
         X509Certificate clientCert = getSSLClientCertificate(req);
 
         if (mAuthority instanceof ICertificateAuthority) {
-            processor.setAuthority(certAuthority);
+            processor.setAuthority(targetCA);
 
-            if (certAuthority.noncesEnabled()) {
+            if (targetCA.noncesEnabled()) {
                 String nonces = req.getParameter("nonce");
                 if (nonces == null) {
                     throw new ForbiddenException("Missing nonce.");
@@ -418,7 +416,8 @@ public class DoRevoke extends CMSServlet {
 
             if (mAuthority instanceof ICertificateAuthority) {
 
-                Enumeration<ICertRecord> e = mCertDB.searchCertificates(revokeAll, totalRecordCount, mTimeLimits);
+                ICertificateRepository certDB = targetCA.getCertificateRepository();
+                Enumeration<ICertRecord> e = certDB.searchCertificates(revokeAll, totalRecordCount, mTimeLimits);
 
                 while (e != null && e.hasMoreElements()) {
                     ICertRecord targetRecord = e.nextElement();
@@ -441,7 +440,7 @@ public class DoRevoke extends CMSServlet {
 
                     try {
                         if (mAuthority instanceof ICertificateAuthority &&
-                            certAuthority.noncesEnabled() &&
+                            targetCA.noncesEnabled() &&
                             !processor.isMemberOfSubsystemGroup(clientCert)) {
                             // validate nonce for each certificate
                             Long nonce = nonceMap.get(targetRecord.getSerialNumber());

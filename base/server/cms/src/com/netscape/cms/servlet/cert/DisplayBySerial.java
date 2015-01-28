@@ -85,7 +85,6 @@ public class DisplayBySerial extends CMSServlet {
     private final static String TPL_FILE1 = "displayBySerial.template";
     private final static BigInteger MINUS_ONE = new BigInteger("-1");
 
-    private ICertificateRepository mCertDB = null;
     private String mForm1Path = null;
     private X509Certificate mCACerts[] = null;
 
@@ -103,9 +102,6 @@ public class DisplayBySerial extends CMSServlet {
      */
     public void init(ServletConfig sc) throws ServletException {
         super.init(sc);
-        if (mAuthority instanceof ICertificateAuthority) {
-            mCertDB = ((ICertificateAuthority) mAuthority).getCertificateRepository();
-        }
         try {
             mCACerts = ((ICertAuthority) mAuthority).getCACertChain().getChain();
         } catch (Exception e) {
@@ -143,6 +139,9 @@ public class DisplayBySerial extends CMSServlet {
         CMSTemplate form = null;
         Locale[] locale = new Locale[1];
 
+        ICertificateAuthority targetCA = certAuthority.getSubCA(req.getParameter("caRef"));
+        ICertificateRepository certDB = targetCA.getCertificateRepository();
+
         try {
             AuthzToken authzToken = null;
 
@@ -160,7 +159,7 @@ public class DisplayBySerial extends CMSServlet {
             }
 
             serialNumber = getSerialNumber(req);
-            getCertRecord(serialNumber, certType); //throw exception on error
+            getCertRecord(certDB, serialNumber, certType); //throw exception on error
 
             if (certType[0].equalsIgnoreCase("x509")) {
                 form = getTemplate(mForm1Path, req, locale);
@@ -185,7 +184,7 @@ public class DisplayBySerial extends CMSServlet {
 
         try {
             if (serialNumber.compareTo(MINUS_ONE) > 0) {
-                process(argSet, header, serialNumber,
+                process(certDB, argSet, header, serialNumber,
                         req, resp, locale[0]);
             } else {
                 error = new ECMSGWException(
@@ -222,7 +221,9 @@ public class DisplayBySerial extends CMSServlet {
     /**
      * Display information about a particular certificate
      */
-    private void process(CMSTemplateParams argSet, IArgBlock header,
+    private void process(
+            ICertificateRepository certDB,
+            CMSTemplateParams argSet, IArgBlock header,
             BigInteger seq, HttpServletRequest req,
             HttpServletResponse resp,
             Locale locale)
@@ -230,10 +231,10 @@ public class DisplayBySerial extends CMSServlet {
         String certType[] = new String[1];
 
         try {
-            getCertRecord(seq, certType); // throw exception on error
+            getCertRecord(certDB, seq, certType); // throw exception on error
 
             if (certType[0].equalsIgnoreCase("x509")) {
-                processX509(argSet, header, seq, req, resp, locale);
+                processX509(certDB, argSet, header, seq, req, resp, locale);
                 return;
             }
         } catch (EBaseException e) {
@@ -245,7 +246,9 @@ public class DisplayBySerial extends CMSServlet {
         return;
     }
 
-    private void processX509(CMSTemplateParams argSet, IArgBlock header,
+    private void processX509(
+            ICertificateRepository certDB,
+            CMSTemplateParams argSet, IArgBlock header,
             BigInteger seq, HttpServletRequest req,
             HttpServletResponse resp,
             Locale locale)
@@ -257,7 +260,7 @@ public class DisplayBySerial extends CMSServlet {
         }
 
         try {
-            ICertRecord rec = mCertDB.readCertificateRecord(seq);
+            ICertRecord rec = certDB.readCertificateRecord(seq);
             if (rec == null) {
                 CMS.debug("DisplayBySerial: failed to read record");
                 throw new ECMSGWException(
@@ -461,12 +464,14 @@ public class DisplayBySerial extends CMSServlet {
         return;
     }
 
-    private ICertRecord getCertRecord(BigInteger seq, String certtype[])
+    private ICertRecord getCertRecord(
+            ICertificateRepository certDB,
+            BigInteger seq, String certtype[])
             throws EBaseException {
         ICertRecord rec = null;
 
         try {
-            rec = mCertDB.readCertificateRecord(seq);
+            rec = certDB.readCertificateRecord(seq);
             X509CertImpl x509cert = rec.getCertificate();
 
             if (x509cert != null) {

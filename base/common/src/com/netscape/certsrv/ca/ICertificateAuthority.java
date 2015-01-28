@@ -18,6 +18,7 @@
 package com.netscape.certsrv.ca;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -515,4 +516,31 @@ public interface ICertificateAuthority extends ISubsystem {
 
     public CertificateIssuerName getIssuerObj();
     public CertificateSubjectName getSubjectObj();
+
+    /**
+     * Get the sub-CA specified by a slash-delimited string.
+     *
+     * Leading and trailing slashes are stripped and multiple
+     * slashes appearing together in the interior are treated
+     * as a single delimiter.
+     */
+    public ICertificateAuthority getSubCA(String pathRaw)
+        throws EBaseException;
+
+    /**
+     * Get the sub-CA specified by the relative heirarchy.
+     */
+    public ICertificateAuthority getSubCA(List<String> relHier)
+        throws EBaseException;
+
+    /**
+     * Create a new sub-CA directly underneath this CA.
+     *
+     * Return the new certificate authority or null on error.
+     *
+     * @param handle The individual handle of the sub-CA' _not_ a
+     *               complete caRef
+     */
+    public ICertificateAuthority createSubCA(String handle, String dn)
+        throws Exception;
 }

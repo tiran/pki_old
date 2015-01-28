@@ -25,14 +25,17 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -60,6 +63,9 @@ import org.mozilla.jss.asn1.INTEGER;
 import org.mozilla.jss.asn1.InvalidBERException;
 import org.mozilla.jss.asn1.OBJECT_IDENTIFIER;
 import org.mozilla.jss.asn1.OCTET_STRING;
+import org.mozilla.jss.crypto.CryptoToken;
+import org.mozilla.jss.crypto.KeyPairAlgorithm;
+import org.mozilla.jss.crypto.KeyPairGenerator;
 import org.mozilla.jss.crypto.SignatureAlgorithm;
 import org.mozilla.jss.crypto.TokenException;
 import org.mozilla.jss.pkix.cert.Extension;
@@ -77,6 +83,7 @@ import com.netscape.certsrv.ca.ECAException;
 import com.netscape.certsrv.ca.ICRLIssuingPoint;
 import com.netscape.certsrv.ca.ICertificateAuthority;
 import com.netscape.certsrv.dbs.IDBSubsystem;
+import com.netscape.certsrv.dbs.IDBSSession;
 import com.netscape.certsrv.dbs.certdb.ICertRecord;
 import com.netscape.certsrv.dbs.certdb.ICertificateRepository;
 import com.netscape.certsrv.dbs.crldb.ICRLRepository;
@@ -96,6 +103,8 @@ import com.netscape.certsrv.request.IRequestScheduler;
 import com.netscape.certsrv.request.IService;
 import com.netscape.certsrv.security.ISigningUnit;
 import com.netscape.certsrv.util.IStatsSubsystem;
+import com.netscape.cms.servlet.csadmin.CertUtil;
+import com.netscape.cmscore.base.PropConfigStore;
 import com.netscape.cmscore.dbs.CRLRepository;
 import com.netscape.cmscore.dbs.CertRecord;
 import com.netscape.cmscore.dbs.CertificateRepository;
@@ -106,6 +115,7 @@ import com.netscape.cmscore.listeners.ListenerPlugin;
 import com.netscape.cmscore.request.RequestSubsystem;
 import com.netscape.cmscore.security.KeyCertUtil;
 import com.netscape.cmscore.util.Debug;
+import com.netscape.cmsutil.crypto.CryptoUtil;
 import com.netscape.cmsutil.ocsp.BasicOCSPResponse;
 import com.netscape.cmsutil.ocsp.CertID;
 import com.netscape.cmsutil.ocsp.CertStatus;
@@ -123,6 +133,9 @@ import com.netscape.cmsutil.ocsp.SingleResponse;
 import com.netscape.cmsutil.ocsp.TBSRequest;
 import com.netscape.cmsutil.ocsp.UnknownInfo;
 
+import org.apache.commons.lang.StringUtils;
+
+
 /**
  * A class represents a Certificate Authority that is
  * responsible for certificate specific operations.
@@ -135,6 +148,9 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
     public static final String OFFICIAL_NAME = "Certificate Manager";
 
     public final static OBJECT_IDENTIFIER OCSP_NONCE = new OBJECT_IDENTIFIER("1.3.6.1.5.5.7.48.1.2");
+
+    protected List<String> subCAHier;
+    protected String subCAOUs;
 
     protected ISubsystem mOwner = null;
     protected IConfigStore mConfig = null;
@@ -234,6 +250,27 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
      * Constructs a CA subsystem.
      */
     public CertificateAuthority() {
+        subCAHier = new ArrayList(0);
+        subCAOUs = joinSubCAOUs(subCAHier);
+    }
+
+    /**
+     * Construct a CA subsystem with given owner subsystem, config and
+     * path in CA hierarchy.
+     *
+     * The primary CA has an empty path.  For Sub-CAs, the
+     * certification path runs left-to-right, i.e., CA at index
+     * N is signed by CA at index (N - 1).
+     */
+    public CertificateAuthority(
+            String subsystemId,
+            ISubsystem owner,
+            IConfigStore config,
+            List<String> path) throws EBaseException {
+        subCAHier = path;
+        subCAOUs = joinSubCAOUs(subCAHier);
+        setId(subsystemId);
+        init(owner, config);
     }
 
     /**
@@ -1226,13 +1263,17 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
                 mIssuerObj = new CertificateIssuerName((X500Name)mSubjectObj.get(CertificateIssuerName.DN_NAME));
             }
 
-            mSigningUnit.init(this, caSigningCfg);
+            String handle = null;
+            if (subCAHier != null && subCAHier.size() > 0)
+                handle = StringUtils.join(subCAHier, ",");
+            mSigningUnit.init(this, caSigningCfg, handle);
             CMS.debug("CA signing unit inited");
 
             // for identrus
             IConfigStore CrlStore = mConfig.getSubStore(PROP_CRL_SIGNING_SUBSTORE);
 
-            if (CrlStore != null && CrlStore.size() > 0) {
+            if (CrlStore != null && CrlStore.size() > 0
+                    && (subCAHier == null || subCAHier.size() == 0)) {
                 mCRLSigningUnit = new SigningUnit();
                 mCRLSigningUnit.init(this, mConfig.getSubStore(PROP_CRL_SIGNING_SUBSTORE));
             } else {
@@ -1302,7 +1343,8 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
 
             IConfigStore OCSPStore = mConfig.getSubStore(PROP_OCSP_SIGNING_SUBSTORE);
 
-            if (OCSPStore != null && OCSPStore.size() > 0) {
+            if (OCSPStore != null && OCSPStore.size() > 0
+                    && (subCAHier == null || subCAHier.size() == 0)) {
                 mOCSPSigningUnit = new SigningUnit();
                 mOCSPSigningUnit.init(this, mConfig.getSubStore(PROP_OCSP_SIGNING_SUBSTORE));
                 CMS.debug("Separate OCSP signing unit inited");
@@ -1448,13 +1490,13 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
         String certReposDN = mConfig.getString(PROP_CERT_REPOS_DN, null);
 
         if (certReposDN == null) {
-            certReposDN = "ou=certificateRepository, ou=" + getId() +
+            certReposDN = subCAOUs + "ou=certificateRepository, ou=" + getId() +
                     ", " + getDBSubsystem().getBaseDN();
         }
         String reposDN = mConfig.getString(PROP_REPOS_DN, null);
 
         if (reposDN == null) {
-            reposDN = "ou=certificateRepository, ou=" + getId() +
+            reposDN = subCAOUs + "ou=certificateRepository, ou=" + getId() +
                     ", " + getDBSubsystem().getBaseDN();
         }
 
@@ -2088,5 +2130,122 @@ public class CertificateAuthority implements ICertificateAuthority, ICertAuthori
         }
 
         return new SingleResponse(cid, certStatus, thisUpdate, nextUpdate);
+    }
+
+    /**
+     * Get the sub-CA specified by a slash-delimited string.
+     *
+     * Leading and trailing slashes are stripped and multiple
+     * slashes appearing together in the interior are treated
+     * as a single delimiter.
+     */
+    public ICertificateAuthority getSubCA(String pathRaw)
+            throws EBaseException {
+        if (pathRaw == null)
+            return this;
+        pathRaw = StringUtils.strip(pathRaw, " /");
+        String[] pathComponents = StringUtils.split(pathRaw, "/");
+        List<String> path = new ArrayList(pathComponents.length);
+        for (String s : pathComponents)
+            path.add(s);
+        return getSubCA(path);
+    }
+
+    /**
+     * Get the sub-CA specified by the relative hierarchy.
+     */
+    public ICertificateAuthority getSubCA(List<String> relHier)
+            throws EBaseException {
+        if (relHier == null || relHier.size() < 1)
+            return this;
+
+        List<String> newHier = new ArrayList();
+        if (subCAHier != null)
+            newHier.addAll(0, subCAHier);
+        newHier.add(relHier.get(0));
+
+        CertificateAuthority subCA = new CertificateAuthority(
+                getId(), mOwner, mConfig, newHier);
+        return subCA.getSubCA(relHier.subList(1, relHier.size()));
+    }
+
+    private static String joinSubCAOUs(List<String> handles) {
+        String s = "";
+        if (handles != null) {
+            for (String handle : handles) {
+                s = "ou=" + handle + "," + s;
+            }
+        }
+        return s;
+    }
+
+    /**
+     * Create a new sub-CA directly underneath this CA.
+     */
+    public ICertificateAuthority createSubCA(String handle, String dn)
+            throws EBaseException {
+        ICertificateAuthority target = null;
+        try {
+            target = getSubCA(handle);
+        } catch (Exception e) {
+            // squash it; this is normal
+        }
+        if (target != null)
+            throw new ECAException("Sub-CA already exists" /* TODO getUserMessage */);
+
+        ArrayList<String> hier = new ArrayList<>(subCAHier);
+        hier.add(handle);
+
+        try {
+            /*
+             * Generate sub-CA signing key
+             */
+            CryptoManager cryptoManager = CryptoManager.getInstance();
+            // TODO read PROP_TOKEN_NAME config
+            CryptoToken token = cryptoManager.getInternalKeyStorageToken();
+            // TODO algorithm parameter
+            KeyPairGenerator gen = token.getKeyPairGenerator(KeyPairAlgorithm.RSA);
+            gen.initialize(2048);
+            KeyPair keypair = gen.genKeyPair();
+            PublicKey pub = keypair.getPublic();
+            X509Key x509key = CryptoUtil.convertPublicKeyToX509Key(pub);
+
+            /*
+             * Sign certificate
+             */
+            String algName = mSigningUnit.getDefaultAlgorithm();
+            IConfigStore cs = new PropConfigStore("cs");
+            cs.put(".profile", "caCert.profile");
+            cs.put(".dn", dn);
+            cs.put(".keyalgorithm", algName);
+            X509CertImpl cert =
+                CertUtil.createLocalCertWithCA(cs, x509key, "", "", "local", this);
+
+            /*
+             * Add certificate to nssdb
+             */
+            IConfigStore sigCS = mConfig.getSubStore(PROP_SIGNING_SUBSTORE);
+            String topNick = null;
+            try {
+                topNick = sigCS.getString(ISigningUnit.PROP_RENAMED_CERT_NICKNAME);
+            } catch (EBaseException e) {
+                topNick = sigCS.getString(ISigningUnit.PROP_CERT_NICKNAME);
+            }
+            String nickname = topNick + " " + StringUtils.join(hier, ",");
+            cryptoManager.importCertPackage(cert.getEncoded(), nickname);
+        } catch (Exception e) {
+            throw new ECAException("Error creating sub-CA certificate" /* TODO getUserMessage */);
+        }
+
+        /*
+         * Create LDAP entries
+         */
+        String certReposDN = joinSubCAOUs(hier) +
+            "ou=certificateRepository, ou=" + getId() + ", " + getDBSubsystem().getBaseDN();
+        try (IDBSSession s = DBSubsystem.getInstance().createSession()) {
+            s.add(certReposDN, CMS.createRepositoryRecord());
+        }
+
+        return getSubCA(handle);
     }
 }

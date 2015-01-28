@@ -321,8 +321,10 @@ function displayCertificateRecord(i, cert)
      "<td style='overflow: hidden; white-space: nowrap;'>"+
      "     <font face='PrimaSans BT, Verdana, sans-serif' size='-1'>\n"+
      "   <div style='overflow: hidden; white-space: nowrap;'>"+
-     " <a index='"+i+"' href='displayBySerial?op=displayBySerial&serialNumber=0x"+
-           cert.serialNumber+"' onmouseover='mouseover(this,event);' "+
+     " <a index='"+i+"' href='displayBySerial?op=displayBySerial"
+        + "&serialNumber=0x" + cert.serialNumber
+        + (result.header.caRef ? "&caRef=" + result.header.caRef : "")
+        + "' onmouseover='mouseover(this,event);' "+
            "onmouseout='mouseout(this);'>"+
          cert.subject+"</a></div></font>"+
      "</td>"+
@@ -419,6 +421,7 @@ function doNext(element)
 	var form = element.form;
 //	form.action = "/"+result.header.op;
         form.action = "/ca/agent/ca/listCerts";
+        form.caRef.value = result.header.caRef || "";
 	form.op.value = result.header.op;
         form.queryCertFilter.value = result.header.queryCertFilter;
         form.direction.value= "down";
@@ -472,6 +475,8 @@ document.write(
 "<button "+disabledUp+" NAME=up onClick='doNext(this)' VALUE='<' width='72'>&lt;</button>\n"+
 "<INPUT TYPE=hidden NAME=totalRecordCount VALUE='"+
 result.header.totalRecordCount+ "'>\n"+
+"<INPUT TYPE=hidden NAME=caRef VALUE='"+
+(result.header.caRef || "") + "'>\n"+
 "<INPUT TYPE=hidden NAME=queryCertFilter VALUE='"+
 result.header.queryCertFilter+ "'>\n"+
 "<INPUT TYPE=hidden NAME=querySentinelDown VALUE='"+

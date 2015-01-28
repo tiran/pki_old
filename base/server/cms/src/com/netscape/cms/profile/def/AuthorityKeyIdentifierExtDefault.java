@@ -26,8 +26,11 @@ import netscape.security.x509.PKIXExtensions;
 import netscape.security.x509.X509CertInfo;
 
 import com.netscape.certsrv.apps.CMS;
+import com.netscape.certsrv.base.EBaseException;
 import com.netscape.certsrv.base.IConfigStore;
+import com.netscape.certsrv.ca.ICertificateAuthority;
 import com.netscape.certsrv.profile.EProfileException;
+import com.netscape.certsrv.profile.IEnrollProfile;
 import com.netscape.certsrv.profile.IProfile;
 import com.netscape.certsrv.property.Descriptor;
 import com.netscape.certsrv.property.EPropertyException;
@@ -161,18 +164,26 @@ public class AuthorityKeyIdentifierExtDefault extends CAEnrollDefault {
      */
     public void populate(IRequest request, X509CertInfo info)
             throws EProfileException {
-        AuthorityKeyIdentifierExtension ext = createExtension(info);
+        ICertificateAuthority ca = (ICertificateAuthority)
+                CMS.getSubsystem(CMS.SUBSYSTEM_CA);
+        try {
+            ca = ca.getSubCA(request.getExtDataInString(IEnrollProfile.REQUEST_AUTHORITY_REF));
+        } catch (EBaseException e) {
+            throw new EProfileException("Could not reach requested CA");
+        }
 
+        AuthorityKeyIdentifierExtension ext = createExtension(ca, info);
         addExtension(PKIXExtensions.AuthorityKey_Id.toString(), ext, info);
     }
 
-    public AuthorityKeyIdentifierExtension createExtension(X509CertInfo info) {
+    public AuthorityKeyIdentifierExtension createExtension(
+            ICertificateAuthority ca, X509CertInfo info) {
         KeyIdentifier kid = null;
         String localKey = getConfig("localKey");
         if (localKey != null && localKey.equals("true")) {
             kid = getKeyIdentifier(info);
         } else {
-            kid = getCAKeyIdentifier();
+            kid = getCAKeyIdentifier(ca);
         }
 
         if (kid == null)

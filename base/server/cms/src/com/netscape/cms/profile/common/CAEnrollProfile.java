@@ -95,8 +95,13 @@ public class CAEnrollProfile extends EnrollProfile {
         CMS.debug("CAEnrollProfile: execute reqId=" +
                 request.getRequestId().toString());
         ICertificateAuthority ca = (ICertificateAuthority) getAuthority();
-        ICAService caService = (ICAService) ca.getCAService();
+        try {
+            ca = ca.getSubCA(request.getExtDataInString(REQUEST_AUTHORITY_REF));
+        } catch (EBaseException e) {
+            throw new EProfileException("Could not reach requested CA");
+        }
 
+        ICAService caService = (ICAService) ca.getCAService();
         if (caService == null) {
             throw new EProfileException("No CA Service");
         }

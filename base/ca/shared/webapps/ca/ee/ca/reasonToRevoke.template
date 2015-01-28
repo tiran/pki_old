@@ -187,9 +187,9 @@ function displayCertInfo()
     document.write("<table border=\"0\" cellspacing=\"2\">");
     for (var i = 0; i < result.recordSet.length; ++i ) {
         if (result.recordSet[i].serialNumber != null) {
-            if (result.header.caSerialNumber != null &&
-                result.recordSet[i].serialNumber ==
-                result.header.caSerialNumber) {
+            if (result.header.caSerialNumber != null
+                    && result.recordSet[i].serialNumber == result.header.caSerialNumber
+                    && (result.header.caRef || "") == "") {
                 document.write(renderRowWithoutCheckbox("Serial Number: ",
                                toHex(result.recordSet[i].serialNumber)));
             } else {
@@ -448,6 +448,8 @@ function revokeCert(serialNumber)
         <input type="reset" value="Reset" name="reset" width="72">&nbsp;&nbsp;
 <SCRIPT LANGUAGE="JavaScript">
 //<!--
+        document.writeln("<INPUT TYPE=hidden name=caRef value=\"" +
+                         (result.header.caRef || "") + "\">");
         document.writeln("<INPUT TYPE=hidden name=serialNumber value=\"" +
                          result.header.serialNumber +"\">");
         document.writeln("<INPUT TYPE=hidden name=revokeAll value=\"" +
