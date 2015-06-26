@@ -44,6 +44,26 @@ from . import pkimessages as log
 from . import pkilogging
 
 
+class AdditionalSectionsError(ValueError):
+    def __init__(self, sections):
+        super(AdditionalSectionsError, self).__init__(sections)
+        self.sections = sections
+
+    def __str__(self):
+        return log.PKI_USER_CONFIG_SECTIONS_1 % ', '.join(sorted(self.sections))
+
+
+class AdditionalOptionsError(ValueError):
+    def __init__(self, options):
+        super(AdditionalOptionsError, self).__init__(options)
+        self.options = options
+
+    def __str__(self):
+        options = ["    [%s] %s" % (section, option)
+                   for section, option in sorted(self.options)]
+        return log.PKI_USER_CONFIG_OPTIONS_1 % '\n '.join(options)
+
+
 class PKIConfigParser:
 
     COMMENT_CHAR = '#'
@@ -318,7 +338,29 @@ class PKIConfigParser:
 
         return password
 
-    def read_pki_configuration_file(self):
+    def validate_user_config(self):
+        pki_sections = set(self.pki_config.sections()) | {ConfigParser.DEFAULTSECT}
+        user_sections = set(config.user_config.sections()) | {ConfigParser.DEFAULTSECT}
+
+        diff_sections = user_sections.difference(pki_sections)
+        if diff_sections:
+            raise AdditionalSectionsError(diff_sections)
+
+        diff_options = set()
+        for section in user_sections:
+            for option, _ in config.user_config.items(section):
+                if not self.pki_config.has_option(section, option):
+                    if (ConfigParser.DEFAULTSECT, option) in diff_options:
+                        # this has been already reported for the DEFAULT section
+                        continue
+                    diff_options.add((section, option))
+
+        if diff_options:
+            raise AdditionalOptionsError(diff_options)
+
+        return True
+
+    def read_pki_configuration_file(self, strict=False):
         """Read configuration file sections into dictionaries"""
         rv = 0
         try:
@@ -338,8 +380,10 @@ class PKIConfigParser:
 
                 print 'Loading deployment configuration from ' + \
                       config.user_deployment_cfg + '.'
-                self.pki_config.read([config.user_deployment_cfg])
                 config.user_config.read([config.user_deployment_cfg])
+                if strict:
+                    self.validate_user_config()
+                self.pki_config.read([config.user_deployment_cfg])
 
                 # Look through each section and see if any password settings
                 # are present.  If so, escape any '%' characters.
@@ -372,6 +416,8 @@ class PKIConfigParser:
                                 continue
         except ConfigParser.ParsingError, err:
             print err
+            rv = err
+        except (AdditionalSectionsError, AdditionalOptionsError) as err:
             rv = err
         return rv
 

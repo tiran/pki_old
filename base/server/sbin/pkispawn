@@ -113,6 +113,11 @@ def main(argv):
         help='configuration filename '
         '(MUST specify complete path)')
 
+    parser.optional.add_argument(
+        '--strict',
+        dest='strict_user_deployment_cfg', action='store_true',
+        help='strict validation of configuration file')
+
     args = parser.process_command_line_arguments()
 
     config.default_deployment_cfg = \
@@ -502,7 +507,7 @@ def main(argv):
         sys.exit(1)
 
     # Read the specified PKI configuration file.
-    rv = parser.read_pki_configuration_file()
+    rv = parser.read_pki_configuration_file(strict=args.strict_user_deployment_cfg)
     if rv != 0:
         config.pki_log.error(log.PKI_UNABLE_TO_PARSE_1, rv,
                              extra=config.PKI_INDENTATION_LEVEL_0)

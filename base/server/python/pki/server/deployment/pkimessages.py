@@ -110,6 +110,8 @@ PKI_SYMLINK_MISSING_OR_NOT_A_SYMLINK_1 = \
     "Symlink '%s' is either missing or is NOT a symbolic link!"
 PKI_UNABLE_TO_PARSE_1 = "'Could not parse:  '%s'"
 PKI_UNABLE_TO_CREATE_LOG_DIRECTORY_1 = "Could not create log directory '%s'!"
+PKI_USER_CONFIG_SECTIONS_1 = "User configuration contains unsupported section(s) %s"
+PKI_USER_CONFIG_OPTIONS_1 = "User configuration contains unsupported option(s)\n%s"
 
 
 # PKI Deployment 'pkispawn' and 'pkidestroy' Messages
