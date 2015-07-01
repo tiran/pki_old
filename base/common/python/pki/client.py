@@ -20,9 +20,12 @@
 #
 
 import requests
+from nss import nss
+from nss import ssl
 
+from .nssta import NSSTransportAdapter
 
-class PKIConnection:
+class PKIBaseConnection(object):
     """
     Class to encapsulate the connection between the client and a Dogtag
     subsystem.
@@ -73,23 +76,6 @@ class PKIConnection:
         """
         if username is not None and password is not None:
             self.session.auth = (username, password)
-
-    def set_authentication_cert(self, pem_cert_path):
-        """
-        Set the path to the PEM file containing the certificate and private key
-        for the client certificate to be used for authentication to the server,
-        when client certificate authentication is required.
-
-        :param pem_cert_path: path to the PEM file
-        :type pem_cert_path: str
-        :return: None
-        :raises: Exception if path is empty or None.
-        """
-        if pem_cert_path is None:
-            raise Exception("No path for the certificate specified.")
-        if len(str(pem_cert_path)) == 0:
-            raise Exception("No path for the certificate specified.")
-        self.session.cert = pem_cert_path
 
     def get(self, path, headers=None, params=None, payload=None):
         """
@@ -174,6 +160,50 @@ class PKIConnection:
         r = self.session.delete(self.serverURI + path, headers=headers)
         r.raise_for_status()
         return r
+
+
+class PKIConnection(PKIBaseConnection):
+    def set_authentication_cert(self, pem_cert_path):
+        """
+        Set the path to the PEM file containing the certificate and private key
+        for the client certificate to be used for authentication to the server,
+        when client certificate authentication is required.
+
+        :param pem_cert_path: path to the PEM file
+        :type pem_cert_path: str
+        :return: None
+        :raises: Exception if path is empty or None.
+        """
+        if pem_cert_path is None:
+            raise Exception("No path for the certificate specified.")
+        if len(str(pem_cert_path)) == 0:
+            raise Exception("No path for the certificate specified.")
+        self.session.cert = pem_cert_path
+
+
+class PKINSSConnection(PKIBaseConnection):
+    init_context = None
+    cert_dir = None
+
+    def __init__(self, *args, **kwargs):
+        super(PKINSSConnection, self).__init__(*args, **kwargs)
+        self.adapter = NSSTransportAdapter()
+        self.session.mount('https', self.adapter)
+
+    @classmethod
+    def initialize(cls, cert_dir, *args, **kwargs):
+        if cls.is_initialized():
+            raise RuntimeError('already initialized')
+        cls.init_context = nss.nss_init_context(cert_dir, *args, **kwargs)
+        cls.cert_dir = cert_dir
+        ssl.set_domestic_policy()
+        ssl.clear_session_cache()
+
+    @classmethod
+    def is_initialized(cls):
+        if cls.init_context is None or cls.cert_dir is None:
+            return False
+        return nss.nss_is_initialized()
 
 
 def main():
