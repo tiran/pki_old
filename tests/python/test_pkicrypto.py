@@ -19,67 +19,51 @@
 # All rights reserved.
 #
 
-import os
-import shutil
-import tempfile
 import unittest
 
 from nss import nss
 from nss.error import NSPRError
 
-from pki.crypto import NSSCryptoProvider
+from pkitestbase import PKICryptoTestCase
 
 
-class PKICryptoTests(unittest.TestCase):
+class PKICryptoTests(PKICryptoTestCase):
     password = b'random password'
 
-    @classmethod
-    def setUpClass(cls):
-        cls.tempdir = tempfile.mkdtemp()
-        cls.dbdir = os.path.join(cls.tempdir, 'nssdb')
-        NSSCryptoProvider.setup_database(cls.dbdir, cls.password)
-        cls.provider = NSSCryptoProvider(cls.dbdir, cls.password)
-        cls.provider.initialize()
-
-    @classmethod
-    def tearDownClass(cls):
-        nss.nss_shutdown()
-        shutil.rmtree(cls.tempdir)
-
     def test_generate_nounce_iv(self):
-        iv = self.provider.generate_nonce_iv()
+        iv = self.crypto.generate_nonce_iv()
         self.assertIsInstance(iv, bytes)
         self.assertEqual(len(iv), 8)
 
-        iv = self.provider.generate_nonce_iv(nss.CKM_AES_CBC_PAD)
+        iv = self.crypto.generate_nonce_iv(nss.CKM_AES_CBC_PAD)
         self.assertIsInstance(iv, bytes)
         self.assertEqual(len(iv), 16)
 
     def test_generate_symmentric_key(self):
-        key = self.provider.generate_symmetric_key()
+        key = self.crypto.generate_symmetric_key()
         self.assertIsInstance(key, nss.PK11SymKey)
         self.assertEqual(key.key_length, 24)
 
-        key = self.provider.generate_symmetric_key(nss.CKM_AES_CBC_PAD)
+        key = self.crypto.generate_symmetric_key(nss.CKM_AES_CBC_PAD)
         self.assertIsInstance(key, nss.PK11SymKey)
         self.assertEqual(key.key_length, 32)
 
     def test_generate_session_key(self):
-        key = self.provider.generate_session_key()
+        key = self.crypto.generate_session_key()
         self.assertIsInstance(key, nss.PK11SymKey)
         self.assertEqual(key.key_length, 24)
 
     def test_symmentric_wrap(self):
-        key = self.provider.generate_symmetric_key()
+        key = self.crypto.generate_symmetric_key()
         data = b'some private data'
-        wrapped = self.provider.symmetric_wrap(data, key)
+        wrapped = self.crypto.symmetric_wrap(data, key)
         self.assertNotEqual(data, wrapped)
-        unwrapped = self.provider.symmetric_unwrap(wrapped, key)
+        unwrapped = self.crypto.symmetric_unwrap(wrapped, key)
         self.assertEqual(data, unwrapped)
 
-        otherkey = self.provider.generate_symmetric_key()
+        otherkey = self.crypto.generate_symmetric_key()
         with self.assertRaises(NSPRError) as e:
-            self.provider.symmetric_unwrap(wrapped, otherkey)
+            self.crypto.symmetric_unwrap(wrapped, otherkey)
         self.assertEqual(
             e.exception.error_desc,
             '(SEC_ERROR_BAD_DATA) security library: received bad data.'

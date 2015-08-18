@@ -22,7 +22,11 @@
 Module containing the Python client classes for the SystemCert REST API
 """
 from __future__ import absolute_import
+
 import base64
+
+import six
+
 import pki
 from pki.cert import CertData
 
@@ -55,6 +59,8 @@ class SystemCertClient(object):
 
         pem = cert_data.encoded
         b64 = pem[len(pki.CERT_HEADER):len(pem) - len(pki.CERT_FOOTER)]
-        cert_data.binary = base64.decodestring(b64)
+        if isinstance(b64, six.text_type):
+            b64 = b64.encode('ascii')
+        cert_data.binary = base64.b64decode(b64)
 
         return cert_data
