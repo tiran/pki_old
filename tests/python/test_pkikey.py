@@ -22,6 +22,7 @@
 import unittest
 
 from pki import key as pkikey
+from pki.account import AccountClient
 
 from pkitestbase import PKICryptoTestCase
 
@@ -31,7 +32,13 @@ class PKIKeyClientTests(PKICryptoTestCase):
 
     def setUp(self):
         super(PKIKeyClientTests, self).setUp()
+        self.kra_account = AccountClient(self.connection)
+        self.kra_account.login()
         self.client = pkikey.KeyClient(self.connection, self.crypto)
+
+    def tearDown(self):
+        self.kra_account.logout()
+        super(PKIKeyClientTests, self).tearDown()
 
     def test_list_keys(self):
         keys = self.client.list_keys()

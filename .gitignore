@@ -6,3 +6,6 @@ dist
 MANIFEST
 *.pyc
 __pycache__
+
+/tests/python/admin.pem
+/tests/python/pki.cfg

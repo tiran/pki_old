@@ -34,17 +34,44 @@ from nss import nss
 from pki.client import PKIConnection
 from pki.crypto import NSSCryptoProvider
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
 
 class PKITestCase(unittest.TestCase):
+    """Base test case for PKI
+
+    The test case provides a connection attribute and skips tests if
+    Dogtag PKI is not available.
+    """
     protocol = 'https'
     hostname = socket.gethostname()
     port = '20443'
     subsystem = 'ca'
-    authentication_cert = '/tmp/auth.pem'
+    authentication_cert = os.path.join(HERE, 'admin.pem')
+    dogtag_available = None
 
     security_domain = u'pki-tests'
 
+    @staticmethod
+    def check_available(timeout=0.5):
+        # set flag on base class
+        cls = PKITestCase
+        if cls.dogtag_available is not None:
+            return cls.dogtag_available
+        address = (cls.hostname, cls.port)
+        try:
+            socket.create_connection(address, timeout=timeout).close()
+        except socket.error:
+            cls.dogtag_available = False
+        else:
+            cls.dogtag_available = True
+        return cls.dogtag_available
+
     def setUp(self):
+        super(PKITestCase, self).setUp()
+        if not self.check_available():
+            self.skipTest('Dogtag is not running on %s:%s' %
+                          (self.hostname, self.port))
         self._connection = None
 
     @property
@@ -63,10 +90,16 @@ class PKITestCase(unittest.TestCase):
 
 
 class PKICryptoTestCase(PKITestCase):
+    """PKI test case with crypto provider
+
+    The subclass of PKITestCase also provides a temporary NSS database and
+    a NSSCryptoProvider.
+    """
     password = b'random password'
 
     @classmethod
     def setUpClass(cls):
+        super(PKICryptoTestCase, cls).setUpClass()
         cls.tempdir = tempfile.mkdtemp()
         cls.dbdir = os.path.join(cls.tempdir, 'nssdb')
         NSSCryptoProvider.setup_database(cls.dbdir, cls.password)
