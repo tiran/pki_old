@@ -24,6 +24,12 @@ import selinux
 import sys
 import time
 
+# PKI Deployment Imports
+from .. import pkiconfig as config
+from ..pkiconfig import pki_selinux_config_ports as ports
+from .. import pkimessages as log
+from .. import pkiscriptlet
+
 seobject = None
 if selinux.is_selinux_enabled():
     try:
@@ -33,12 +39,6 @@ if selinux.is_selinux_enabled():
         # sepolgen is missing.
         if sys.version_info.major == 2:
             raise
-
-# PKI Deployment Imports
-from .. import pkiconfig as config
-from ..pkiconfig import pki_selinux_config_ports as ports
-from .. import pkimessages as log
-from .. import pkiscriptlet
 
 
 # PKI Deployment Selinux Setup Scriptlet
