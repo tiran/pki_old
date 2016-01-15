@@ -55,7 +55,8 @@ setup(
     url='http://pki.fedoraproject.org/',
     package_dir={
         'pki': 'base/common/python/pki',
-        'pki.server': 'base/server/python/pki/server'
+        'pki.server': 'base/server/python/pki/server',
+        'pki.testlib': 'tests/pki/testlib',
     },
     packages=[
         'pki',
@@ -63,6 +64,11 @@ setup(
         'pki.server.cli',
         'pki.server.deployment',
         'pki.server.deployment.scriptlets',
+        'pki.testlib',
+        'pki.testlib.api',
+        'pki.testlib.cli',
+        'pki.testlib.common',
+        'pki.testlib.ui',
     ],
     scripts=[
         'base/common/sbin/pki-upgrade',
