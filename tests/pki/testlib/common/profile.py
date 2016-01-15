@@ -1056,7 +1056,8 @@ class Policy(object):
                 ('nsCertEmailCA', 'boolean', 'NULL', 'Email CA', 'false'),
                 ('nsCertObjectSigningCA', 'boolean', 'NULL', 'Object Signing CA', 'false')]
 
-            cls.add_policy_attributes(Policy_definition, Netscape_Certificate_Type_Extension_Default_attributes)
+            cls.add_policy_attributes(
+                Policy_definition, Netscape_Certificate_Type_Extension_Default_attributes)
 
             # Policy parameters
             Netscape_Certificate_Type_Extension_Default_params = [
@@ -1177,6 +1178,7 @@ class Policy(object):
             userExtOID_param = Policy_Value.find(
                 './def/params[@name="userExtOID"]/value')
             userExtOID_param.text = ExtOID
+
 
 class Setup(object):
     '''Create/Modify Profile xml'''

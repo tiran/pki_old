@@ -97,7 +97,8 @@ class QeHost(pytest_multihost.host.Host):
             self, domain, hostname, role, ip=None, external_hostname=None)
         self.redhatrelease = self.GetDistro()
         self.hostname = self.gethostname()
-        self.rhel_pki_pkg_list = ['redhat-pki', 'pki-console', 'redhat-pki-theme', 'idm-console-framework', '389-ds-base']
+        self.rhel_pki_pkg_list = [
+            'redhat-pki', 'pki-console', 'redhat-pki-theme', 'idm-console-framework', '389-ds-base']
         self.fedora_pki_pkg_list = ['dogtag-pki', 'pki-console', 'dogtag-pki-theme', '389-ds']
 
     def qerun(self, command, stdin_text=None, exp_returncode=0, exp_output=None):
@@ -184,18 +185,18 @@ class QeHost(pytest_multihost.host.Host):
 @pytest.yield_fixture(scope="session", autouse=True)
 def session_multihost(request):
     mh = make_multihost_fixture(request,
-            descriptions=[
-                {
-                    'type': 'pki',
-                    'hosts':
-                    {
-                        'master': pytest.num_masters,
-                        'clone': pytest.num_clones
+                                descriptions=[
+                                    {
+                                        'type': 'pki',
+                                        'hosts':
+                                        {
+                                            'master': pytest.num_masters,
+                                            'clone': pytest.num_clones
 
-                    }
-                },
-            ],
-            config_class=QeConfig)
+                                        }
+                                    },
+                                ],
+                                config_class=QeConfig)
     mh.domain = mh.config.domains[0]
     mh.master = mh.domain.hosts_by_role('master')
     mh.clone = mh.domain.hosts_by_role('clone')

@@ -255,9 +255,10 @@ class W_DirSrv(object):
                         'Directory server instance restarted successfully')
                     # sleep for 10 seconds
                     time.sleep(10)
-                tail_cmd = ['tail', '-n', '100', '/var/log/dirsrv/slapd-%s/errors'%(self.DSInstName)]
+                tail_cmd = ['tail', '-n', '100', '/var/log/dirsrv/slapd-%s/errors' %
+                            (self.DSInstName)]
                 try:
-                    self.Host.run_command(tail_cmd, log_stdout = True, raiseonerr = True)
+                    self.Host.run_command(tail_cmd, log_stdout=True, raiseonerr=True)
                 except subprocess.CalledProcessError as E:
                     return ("Error", 1)
                 else:

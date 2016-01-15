@@ -11,6 +11,7 @@ class CertSetup(object):
     This class contains methods to create Role Users, Submit
     request and approve requests.
     """
+
     def __init__(self, host, client_dir, client_dir_pwd, ca_admin_nick,
                  subsystem, http_port, nssdb_dir=None, nssdb_pwd=None):
         self.client_dir = client_dir
@@ -34,7 +35,7 @@ class CertSetup(object):
         raise PkiLibException if security database already exists
         '''
         output = self.multihost.run_command(['pki', '-d', self.nssdb_dir,
-                                            '-c', self.nssdb_pwd, 'client-init'], raiseonerr=False)
+                                             '-c', self.nssdb_pwd, 'client-init'], raiseonerr=False)
         if 'Security database already exists' in output.stdout_text and output.returncode is 255:
             raise PkiLibException('Security Database already Exists', '255')
 
@@ -49,7 +50,8 @@ class CertSetup(object):
         except CalledProcessError as E:
             raise PkiLibException('Unable to import CA Admin p12', E.returncode)
         else:
-            self.multihost.log.info("Successfully import CA Admin p12 file to nssdb %s" % (self.nssdb_dir))
+            self.multihost.log.info(
+                "Successfully import CA Admin p12 file to nssdb %s" % (self.nssdb_dir))
 
     def import_ca_cert(self):
         ''' Import CA Cert to certdb '''
@@ -87,13 +89,13 @@ class CertSetup(object):
         try:
             self.multihost.run_command(['pki', '-d', self.nssdb_dir, '-c', self.nssdb_pwd,
                                         '-h', self.multihost.hostname, '-p', self.sys_http_port,
-                                        '-n', user_nick, self.subsystem, 'group-member-add',  groupid, userid])
+                                        '-n', user_nick, self.subsystem, 'group-member-add', groupid, userid])
         except CalledProcessError as E:
             raise PkiLibException('Unable to add %s to role %s' % (userid, groupid), E.returncode)
         else:
             self.multihost.log.info("Successfully added user %s to role %s" % (userid, groupid))
 
-    def create_user_cert(self, cert_subject, profile = None):
+    def create_user_cert(self, cert_subject, profile=None):
         ''' Add certificate to the subsystem user and add certificate to certdb
         :param str cert_subject: Subject to be used to create certificate reqeust
         :returns None
@@ -108,7 +110,8 @@ class CertSetup(object):
                 '-n', self.sys_admin_nick, 'client-cert-request', cert_subject,
                 '--profile', profile])
         except CalledProcessError as E:
-            raise PkiLibException('Unable to create cert with subject %s' % (cert_subject), E.returncode)
+            raise PkiLibException('Unable to create cert with subject %s' %
+                                  (cert_subject), E.returncode)
         else:
             request_id = re.search('Request ID: [\w]*', output.stdout_text)
             r_id = request_id.group().split(':')[1].strip()
@@ -118,7 +121,8 @@ class CertSetup(object):
                     self.multihost.hostname, '-p', self.sys_http_port, '-n',
                     self.sys_admin_nick, 'cert-request-review', r_id, '--action', 'approve'])
             except CalledProcessError as E:
-                raise PkiLibException('Unable to approve certificate request %s' % (r_id), E.returncode)
+                raise PkiLibException(
+                    'Unable to approve certificate request %s' % (r_id), E.returncode)
             else:
                 cert_id = re.search('Certificate ID: [\w]*', output.stdout_text)
                 c_id = cert_id.group().split(':')[1].strip()
@@ -166,22 +170,26 @@ class CertSetup(object):
                 '-n', user_nick, 'cert-request-profile-show',
                 profile_id, '--output', profile_xml_path])
         except CalledProcessError as E:
-            raise PkiLibException('Unable to get the profile xml of profile id:%s' % (profile_id), E.returncode)
+            raise PkiLibException(
+                'Unable to get the profile xml of profile id:%s' % (profile_id), E.returncode)
         else:
             pki_obj = PkiTools()
             if csr is None:
                 print("yet to be done")
             else:
-                output = self.multihost.transport.get_file(profile_xml_path, '%s-update.xml' % (profile_id))
+                output = self.multihost.transport.get_file(
+                    profile_xml_path, '%s-update.xml' % (profile_id))
                 pki_obj.update_profile_xml(csr, '%s-update.xml' % (profile_id))
-                output = self.multihost.transport.put_file('%s-update.xml' % (profile_id), profile_xml_update_path)
+                output = self.multihost.transport.put_file(
+                    '%s-update.xml' % (profile_id), profile_xml_update_path)
             try:
                 output = self.multihost.run_command([
                     'pki', '-d', self.nssdb_dir, '-c', self.nssdb_pwd,
                     '-h', self.multihost.hostname, '-p', self.sys_http_port,
                     '-n', user_nick, 'cert-request-submit', profile_xml_update_path])
             except CalledProcessError as E:
-                raise PkiLibException('Unable to submit xml request :%s' % (profile_xml_update_path), E.returncode)
+                raise PkiLibException('Unable to submit xml request :%s' %
+                                      (profile_xml_update_path), E.returncode)
             else:
                 request_id = re.search('Request ID: [\w]*', output.stdout_text)
                 r_id = request_id.group().split(':')[1].strip()
@@ -191,7 +199,8 @@ class CertSetup(object):
                         '-h', self.multihost.hostname, '-p', self.sys_http_port,
                         '-n', user_nick, 'cert-request-review', r_id, '--action', 'approve'])
                 except CalledProcessError as E:
-                    raise PkiLibException('Unable to approve request %s as %s' % (r_id, user_nick), E.returncode)
+                    raise PkiLibException(
+                        'Unable to approve request %s as %s' % (r_id, user_nick), E.returncode)
                 else:
                     cert_id = re.search('Certificate ID: [\w]*', output.stdout_text)
                     c_id = cert_id.group().split(':')[1].strip()
@@ -277,6 +286,7 @@ class CertSetup(object):
                 '-n', self.sys_admin_nick, 'cert-show', cert_serial_no,
                 '--pretty', '--output', output_file])
         except CalledProcessError as E:
-            raise PkiLibException('Unable run cert-show on serial number :%s' % (cert_serial_no), E.returncode)
+            raise PkiLibException(
+                'Unable run cert-show on serial number :%s' % (cert_serial_no), E.returncode)
         else:
             return [output.stdout_text, output_file]

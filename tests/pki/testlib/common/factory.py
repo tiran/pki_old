@@ -69,7 +69,7 @@ class PkiTools(object):
             s = csr.find("-----BEGIN CERTIFICATE REQUEST-----")
         if s >= 0:
             e = csr.find("-----END")
-            stripped_csr = csr[s+headerlen:e]
+            stripped_csr = csr[s + headerlen:e]
         return stripped_csr
 
     def generate_pkcs10(self, nssdb_dir, nssdb_pwd, subject_dn, output_file, keysize='2048', keyalgo='rsa'):

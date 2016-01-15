@@ -127,7 +127,7 @@ class DirSrv(object):
 
         :param str InstName: Instance Name
         :return bool: Returns True is successfull else Returns False
-        
+
         Todo: Should raise an DirSrvException
         """
         if InstName is None:
@@ -156,10 +156,10 @@ class DirSrv(object):
         :param str ssl_dir: NSS Directory containing CA and Server-Cert
         :return True if files are are copied, else raises DirSrvException
         """
-        #we stop directory server before we copy files , this is required
-        #because it's seen that at times, if ns-slapd process is reading
-        #the db files, copying of files is successfull but not all data
-        #is written causing the files to go corrupt.
+        # we stop directory server before we copy files , this is required
+        # because it's seen that at times, if ns-slapd process is reading
+        # the db files, copying of files is successfull but not all data
+        # is written causing the files to go corrupt.
         stop_ds = ['systemctl', 'stop', 'dirsrv@%s' % (self.InstName)]
         try:
             self.MultiHost.run_command(stop_ds, log_stdout=True, raiseonerr=True)
@@ -209,7 +209,6 @@ class DirSrv(object):
             else:
                 self.MultiHost.log.info('Directory server instance started successfully')
                 return True
-
 
     def enable_ssl(self, binduri, tls_port):
         """
