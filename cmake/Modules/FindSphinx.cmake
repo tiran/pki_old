@@ -1,5 +1,5 @@
 find_program(SPHINX_EXECUTABLE
-    NAMES sphinx-build
+    NAMES sphinx-build-3 sphinx-build
     PATHS /bin
     DOC "Sphinx documentation generator"
 )

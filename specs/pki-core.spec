@@ -1,8 +1,11 @@
 # Python
+%if 0%{?rhel}
+%global with_python3 0
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from
 distutils.sysconfig import get_python_lib; print(get_python_lib())")}
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from
-distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
+%else
+%global with_python3 1
+%endif
 
 # Tomcat
 %if 0%{?fedora} >= 23
@@ -69,8 +72,6 @@ BuildRequires:    nuxwdog-client-java >= 1.0.3
 BuildRequires:    openldap-devel
 BuildRequires:    pkgconfig
 BuildRequires:    policycoreutils
-BuildRequires:    python-lxml
-BuildRequires:    python-sphinx
 BuildRequires:    velocity
 BuildRequires:    xalan-j2
 BuildRequires:    xerces-j2
@@ -106,15 +107,31 @@ BuildRequires:    python-flake8
 BuildRequires:    python3-flake8
 %endif
 
+%if 0%{?with_python3}
+BuildRequires:    python3
+BuildRequires:    python3-lxml
+BuildRequires:    python3-nss
+BuildRequires:    python3-pyldap
+BuildRequires:    python3-requests
+BuildRequires:    python3-sphinx
+BuildRequires:    python3-six
+BuildRequires:    libselinux-python3
+BuildRequires:    policycoreutils-python3
+%else
+BuildRequires:    python
+BuildRequires:    python-ldap
+BuildRequires:    python-lxml
 BuildRequires:    python-nss
 BuildRequires:    python-requests
+BuildRequires:    python-sphinx
 BuildRequires:    python-six
 BuildRequires:    libselinux-python
 BuildRequires:    policycoreutils-python
 %if 0%{?fedora} >= 23
 BuildRequires:    policycoreutils-python-utils
 %endif
-BuildRequires:    python-ldap
+%endif  # with_python3
+
 BuildRequires:    junit
 BuildRequires:    jpackage-utils >= 0:1.7.5-10
 BuildRequires:    jss >= 4.2.6-35
@@ -138,7 +155,6 @@ BuildRequires:    apr-util-devel
 BuildRequires:    cyrus-sasl-devel
 BuildRequires:    httpd-devel >= 2.4.2
 BuildRequires:    pcre-devel
-BuildRequires:    python
 BuildRequires:    systemd
 BuildRequires:    svrcore-devel
 BuildRequires:    zlib
@@ -285,11 +301,15 @@ Requires:         javassist
 Requires:         jpackage-utils >= 0:1.7.5-10
 Requires:         jss >= 4.2.6-35
 Requires:         ldapjdk
-Requires:         python-ldap
-Requires:         python-lxml
+%if 0%{?with_python3}
+Requires:         python3-nss
+Requires:         python3-requests >= 1.1.0-3
+Requires:         python3-six
+%else
 Requires:         python-nss
 Requires:         python-requests >= 1.1.0-3
 Requires:         python-six
+%endif  # with_python3
 
 %if 0%{?rhel}
 # 'resteasy-base' is a subset of the complete set of
@@ -390,10 +410,18 @@ Requires:         policycoreutils
 Requires:         openldap-clients
 Requires:         pki-base = %{version}-%{release}
 Requires:         pki-tools = %{version}-%{release}
+%if 0%{?with_python3}
+Requires:         python3-pyldap
+Requires:         python3-lxml
+Requires:         policycoreutils-python3
+%else
+Requires:         python-ldap
+Requires:         python-lxml
 Requires:         policycoreutils-python
 %if 0%{?fedora} >= 23
 Requires:         policycoreutils-python-utils
 %endif
+%endif  # with_python3
 
 %if 0%{?fedora} >= 21
 Requires:         selinux-policy-targeted >= 3.13.1-9
@@ -668,6 +696,11 @@ cd build
 	-DBUILD_PKI_CORE:BOOL=ON \
 	-DJAVA_LIB_INSTALL_DIR=%{_jnidir} \
 	-DSYSTEMD_LIB_INSTALL_DIR=%{_unitdir} \
+%if 0%{with_python3}
+        -DPYTHON_VERSION=3 \
+%else
+        -DPYTHON_VERSION=2.7 \
+%endif
 %if ! %{with_tomcat7}
 	-DWITH_TOMCAT7:BOOL=OFF \
 %endif
@@ -693,6 +726,26 @@ cd build
 %{__rm} -rf %{buildroot}
 cd build
 %{__make} install DESTDIR=%{buildroot} INSTALL="install -p"
+
+# byte-compile Python code
+%if 0%{with_python3}
+%{__python3} -m compileall %{buildroot}%{python3_sitelib}
+%{__python3} -O -m compileall %{buildroot}%{python3_sitelib}
+%else
+%{__python} -m compileall %{buildroot}%{python_sitelib}
+%{__python} -O -m compileall %{buildroot}%{python_sitelib}
+%endif
+
+# change shebang to python3
+%if 0%{with_python3}
+sed -i 's,#!/usr/bin/python,#!/usr/bin/python3,' \
+    %{buildroot}%{_sbindir}/pki-upgrade \
+    %{buildroot}%{_sbindir}/pkispawn \
+    %{buildroot}%{_sbindir}/pkidestroy \
+    %{buildroot}%{_sbindir}/pki-server \
+    %{buildroot}%{_sbindir}/pki-server-upgrade \
+    %{buildroot}%{_bindir}/pki
+%endif
 
 # Create symlinks for admin console (TPS does not use admin console)
 for subsystem in ca kra ocsp tks; do
@@ -721,6 +774,13 @@ ln -s %{_datadir}/pki/java-tools/KRATool.cfg %{buildroot}%{_datadir}/pki/java-to
 
 %if ! 0%{?rhel}
 # Scanning the python code with pylint.
+%if 0%{with_python3}
+%{__python3} ../pylint-build-scan.py rpm --prefix %{buildroot}
+if [ $? -ne 0 ]; then
+    echo "python3-pylint failed. RC: $?"
+    exit 1
+fi
+%else
 python2 ../pylint-build-scan.py rpm --prefix %{buildroot}
 if [ $? -ne 0 ]; then
     echo "pylint failed. RC: $?"
@@ -732,6 +792,7 @@ if [ $? -ne 0 ]; then
     echo "pylint --py3k failed. RC: $?"
     exit 1
 fi
+%endif  # with_python3
 
 flake8 --config ../tox.ini %{buildroot}
 if [ $? -ne 0 ]; then
@@ -867,6 +928,15 @@ systemctl daemon-reload
 %{_javadir}/pki/pki-cmsutil.jar
 %{_javadir}/pki/pki-nsutil.jar
 %{_javadir}/pki/pki-certsrv.jar
+
+%if 0%{?with_python3}
+%dir %{python3_sitelib}/pki
+%{python3_sitelib}/pki/*.py
+%{python3_sitelib}/pki/__pycache__/*
+%dir %{python_sitelib}/pki/cli
+%{python3_sitelib}/pki/cli/__pycache__/*
+%{python3_sitelib}/pki/cli/*.py
+%else
 %dir %{python_sitelib}/pki
 %{python_sitelib}/pki/*.py
 %{python_sitelib}/pki/*.pyc
@@ -875,6 +945,8 @@ systemctl daemon-reload
 %{python_sitelib}/pki/cli/*.py
 %{python_sitelib}/pki/cli/*.pyc
 %{python_sitelib}/pki/cli/*.pyo
+%endif  # with_python3
+
 %dir %{_localstatedir}/log/pki
 %{_sbindir}/pki-upgrade
 %{_mandir}/man8/pki-upgrade.8.gz
@@ -940,7 +1012,11 @@ systemctl daemon-reload
 %{_sbindir}/pki-server
 %{_sbindir}/pki-server-nuxwdog
 %{_sbindir}/pki-server-upgrade
+%if 0%{?with_python3}
+%{python3_sitelib}/pki/server/
+%else
 %{python_sitelib}/pki/server/
+%endif  # with_python3
 %dir %{_datadir}/pki/deployment
 %{_datadir}/pki/deployment/config/
 %dir %{_datadir}/pki/scripts

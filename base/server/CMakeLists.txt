@@ -38,6 +38,8 @@ install(
         python/
     DESTINATION
         ${PYTHON_SITE_PACKAGES}
+    FILES_MATCHING PATTERN
+        *.py
 )
 
 # install systemd scripts

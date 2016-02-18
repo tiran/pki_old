@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 2.6.0)
 
 # global needed variables
 set(APPLICATION_NAME ${PROJECT_NAME})
+if (NOT DEFINED PYTHON_VERSION)
+    set(PYTHON_VERSION 2)
+endif(NOT DEFINED PYTHON_VERSION)
 
 # Un-comment the following line to add 'javac' options (e. g. - "-g" debugging)
 #set(CMAKE_JAVA_COMPILE_FLAGS "-g")
@@ -92,11 +95,11 @@ endif ()
 set(CMAKE_THREAD_PREFER_PTHREADS ON)
 find_package(Threads)
 
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp ${PYTHON_VERSION} EXACT REQUIRED)
 execute_process(
     COMMAND
         ${PYTHON_EXECUTABLE} -c
-        "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+        "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
     OUTPUT_VARIABLE
         PYTHON_SITE_PACKAGES
     OUTPUT_STRIP_TRAILING_WHITESPACE
