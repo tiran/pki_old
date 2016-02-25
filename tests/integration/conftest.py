@@ -63,7 +63,8 @@ with betamax.Betamax.configure() as config:
     # config.preserve_exact_body_bytes = True
     # 'none, 'all', 'new_episodes'
     # config.default_cassette_options['record_mode'] = 'none'
-    # config.default_cassette_options['record_mode'] = 'new_episodes'
+    config.default_cassette_options['record_mode'] = 'new_episodes'
+    # config.default_cassette_options['record_mode'] = 'all'
     config.default_cassette_options['match_requests_on'] = [
         'method', 'uri', 'headers', 'body'
     ]
@@ -80,6 +81,7 @@ class PKIConfig(object):
     version = u'10.3.0-0.4.fc23'
 
     name = u'pki-tests'
+    basedn = u'O={}'.format(name)
     subsystems = {u'CA', u'KRA'}
     secure_port = u'8443'
     unsecure_port = u'8080'

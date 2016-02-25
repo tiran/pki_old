@@ -1,7 +1,7 @@
 {
  "http_interactions": [
   {
-   "recorded_at": "2016-02-24T10:36:43",
+   "recorded_at": "2016-02-24T18:49:07",
    "request": {
     "body": {
      "encoding": "utf-8",
@@ -43,7 +43,7 @@
       "Apache-Coyote/1.1"
      ],
      "Set-Cookie": [
-      "JSESSIONID=57F9E571CE04C628BCF304AAC6856520; Path=/ca/; Secure; HttpOnly"
+      "JSESSIONID=B717BBF5D5B4F3DC6A4BA9DC4EB6EDBF; Path=/ca/; Secure; HttpOnly"
      ],
      "Transfer-Encoding": [
       "chunked"
@@ -57,7 +57,7 @@
    }
   },
   {
-   "recorded_at": "2016-02-24T10:36:43",
+   "recorded_at": "2016-02-24T18:49:07",
    "request": {
     "body": {
      "encoding": "utf-8",
@@ -74,7 +74,7 @@
       "keep-alive"
      ],
      "Cookie": [
-      "JSESSIONID=57F9E571CE04C628BCF304AAC6856520"
+      "JSESSIONID=B717BBF5D5B4F3DC6A4BA9DC4EB6EDBF"
      ],
      "User-Agent": [
       "PKI tests"

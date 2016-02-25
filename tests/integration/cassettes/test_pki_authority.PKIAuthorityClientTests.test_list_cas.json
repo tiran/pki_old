@@ -1,0 +1,238 @@
+{
+ "http_interactions": [
+  {
+   "recorded_at": "2016-02-24T18:49:07",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-type": [
+      "application/json"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "[{\"isHostAuthority\":true,\"id\":\"8b182c6d-8e29-416b-add1-728e065c895b\",\"parentID\":null,\"dn\":\"CN=CA Signing Certificate,O=pki-tests\",\"enabled\":true,\"description\":\"Host authority\",\"link\":null}]"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:52:57",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-type": [
+      "application/json"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ],
+     "X-Test-Counter": [
+      "1"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "[{\"isHostAuthority\":true,\"id\":\"8b182c6d-8e29-416b-add1-728e065c895b\",\"parentID\":null,\"dn\":\"CN=CA Signing Certificate,O=pki-tests\",\"enabled\":true,\"description\":\"Host authority\",\"link\":null}]"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:52:57",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-type": [
+      "application/json"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ],
+     "X-Test-Counter": [
+      "2"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "[{\"isHostAuthority\":true,\"id\":\"8b182c6d-8e29-416b-add1-728e065c895b\",\"parentID\":null,\"dn\":\"CN=CA Signing Certificate,O=pki-tests\",\"enabled\":true,\"description\":\"Host authority\",\"link\":null}]"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:52:57",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-type": [
+      "application/json"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ],
+     "X-Test-Counter": [
+      "3"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "[{\"isHostAuthority\":true,\"id\":\"8b182c6d-8e29-416b-add1-728e065c895b\",\"parentID\":null,\"dn\":\"CN=CA Signing Certificate,O=pki-tests\",\"enabled\":true,\"description\":\"Host authority\",\"link\":null}]"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities"
+   }
+  }
+ ],
+ "recorded_with": "betamax/0.5.1"
+}

@@ -1,0 +1,173 @@
+{
+ "http_interactions": [
+  {
+   "recorded_at": "2016-02-24T18:49:07",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-type": [
+      "application/json"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "[{\"isHostAuthority\":true,\"id\":\"8b182c6d-8e29-416b-add1-728e065c895b\",\"parentID\":null,\"dn\":\"CN=CA Signing Certificate,O=pki-tests\",\"enabled\":true,\"description\":\"Host authority\",\"link\":null}]"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:49:32",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": ""
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "GET",
+    "uri": "https://192.168.121.138:8443/ca/rest/account/login"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "{\"id\":\"caadmin\",\"FullName\":\"caadmin\",\"Email\":\"caadmin@example.org\",\"Roles\":{\"Role\":[\"Administrators\",\"Certificate Manager Agents\",\"Enterprise CA Administrators\",\"Enterprise KRA Administrators\",\"Enterprise OCSP Administrators\",\"Enterprise RA Administrators\",\"Enterprise TKS Administrators\",\"Enterprise TPS Administrators\",\"Security Domain Administrators\"]}}"
+    },
+    "headers": {
+     "Cache-Control": [
+      "private"
+     ],
+     "Content-Type": [
+      "application/json"
+     ],
+     "Expires": [
+      "Thu, 01 Jan 1970 00:00:00 UTC"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Set-Cookie": [
+      "JSESSIONID=4BB2C509313282F2344F120822EACC34; Path=/ca/; Secure; HttpOnly"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 200,
+     "message": "OK"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/account/login"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:49:32",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": "Accept=application%2Fjson&Content-type=application%2Fjson"
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-Length": [
+      "57"
+     ],
+     "Content-Type": [
+      "application/x-www-form-urlencoded"
+     ],
+     "Cookie": [
+      "JSESSIONID=4BB2C509313282F2344F120822EACC34"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "POST",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities/8b182c6d-8e29-416b-add1-728e065c895b/disable"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "{\"Attributes\":{\"Attribute\":[]},\"ClassName\":\"com.netscape.certsrv.base.ForbiddenException\",\"Code\":403,\"Message\":\"Authorization Error\"}"
+    },
+    "headers": {
+     "Content-Type": [
+      "application/json"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 403,
+     "message": "Forbidden"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities/8b182c6d-8e29-416b-add1-728e065c895b/disable"
+   }
+  }
+ ],
+ "recorded_with": "betamax/0.5.1"
+}

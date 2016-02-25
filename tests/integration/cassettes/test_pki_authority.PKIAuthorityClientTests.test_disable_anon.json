@@ -1,0 +1,111 @@
+{
+ "http_interactions": [
+  {
+   "recorded_at": "2016-02-24T18:49:07",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": "Content-type=application%2Fjson&Accept=application%2Fjson"
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-Length": [
+      "57"
+     ],
+     "Content-Type": [
+      "application/x-www-form-urlencoded"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "POST",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities/aid/disable"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "{\"Attributes\":{\"Attribute\":[]},\"ClassName\":\"com.netscape.certsrv.base.ForbiddenException\",\"Code\":403,\"Message\":\"Anonymous access not allowed.\"}"
+    },
+    "headers": {
+     "Content-Type": [
+      "application/json"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 403,
+     "message": "Forbidden"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities/aid/disable"
+   }
+  },
+  {
+   "recorded_at": "2016-02-24T18:49:32",
+   "request": {
+    "body": {
+     "encoding": "utf-8",
+     "string": "Accept=application%2Fjson&Content-type=application%2Fjson"
+    },
+    "headers": {
+     "Accept": [
+      "application/json"
+     ],
+     "Accept-Encoding": [
+      "gzip, deflate"
+     ],
+     "Connection": [
+      "keep-alive"
+     ],
+     "Content-Length": [
+      "57"
+     ],
+     "Content-Type": [
+      "application/x-www-form-urlencoded"
+     ],
+     "User-Agent": [
+      "PKI tests"
+     ]
+    },
+    "method": "POST",
+    "uri": "https://192.168.121.138:8443/ca/rest/authorities/aid/disable"
+   },
+   "response": {
+    "body": {
+     "encoding": null,
+     "string": "{\"Attributes\":{\"Attribute\":[]},\"ClassName\":\"com.netscape.certsrv.base.ForbiddenException\",\"Code\":403,\"Message\":\"Anonymous access not allowed.\"}"
+    },
+    "headers": {
+     "Content-Type": [
+      "application/json"
+     ],
+     "Server": [
+      "Apache-Coyote/1.1"
+     ],
+     "Transfer-Encoding": [
+      "chunked"
+     ]
+    },
+    "status": {
+     "code": 403,
+     "message": "Forbidden"
+    },
+    "url": "https://192.168.121.138:8443/ca/rest/authorities/aid/disable"
+   }
+  }
+ ],
+ "recorded_with": "betamax/0.5.1"
+}
