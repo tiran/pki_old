@@ -316,6 +316,8 @@ PKIHELPER_SECURITY_DOMAIN_UPDATE_SUCCESS_2 = \
     "updateDomainXML SUCCESSFULLY deleted this '%s' entry from "\
     "security domain '%s'"
 PKIHELPER_SELINUX_DISABLED = "Selinux is disabled.  Not checking port contexts"
+PKIHELPER_SELINUX_NA = \
+    "Selinux bindings are not available. Not checking port contexts"
 PKIHELPER_SERVERCERTNICK_CONF_2 = "Overwriting contents of '%s' with '%s'"
 PKIHELPER_SET_MODE_1 = "setting ownerships, permissions, and acls on '%s'"
 PKIHELPER_SLOT_SUBSTITUTION_2 = "slot substitution: '%s' ==> '%s'"
@@ -438,6 +440,8 @@ SELINUX_DESTROY_1 = "depopulating '%s'"
 SELINUX_SPAWN_1 = "populating '%s'"
 SELINUX_DISABLED_DESTROY_1 = "selinux disabled. skipping unlabelling '%s'"
 SELINUX_DISABLED_SPAWN_1 = "selinux disabled. skipping labelling '%s'"
+SELINUX_NA_SPAWN_1 = \
+    "selinux bindings are not available. skipping labelling '%s'"
 SLOT_ASSIGNMENT_DESTROY_1 = "unassigning slots for '%s'"
 SLOT_ASSIGNMENT_SPAWN_1 = "assigning slots for '%s'"
 SUBSYSTEM_DESTROY_1 = "depopulating '%s'"

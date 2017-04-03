@@ -22,7 +22,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import errno
-import sys
 import os
 import fileinput
 import re
@@ -49,16 +48,11 @@ import pki.system
 import pki.util
 
 # special care for SELinux
-import selinux
-seobject = None
-if selinux.is_selinux_enabled():
-    try:
-        import seobject
-    except ImportError:
-        # TODO: Fedora 22 has an incomplete Python 3 package
-        # sepolgen is missing.
-        if sys.version_info.major == 2:
-            raise
+try:
+    import selinux
+    import seobject
+except ImportError:
+    selinux = seobject = None
 
 
 class Identity:
@@ -807,7 +801,13 @@ class ConfigurationFile:
         if len(ports) == 0:
             return
 
-        if not selinux.is_selinux_enabled() or seobject is None:
+        if selinux is None:
+            config.pki_log.error(
+                log.PKIHELPER_SELINUX_NA,
+                extra=config.PKI_INDENTATION_LEVEL_2)
+            return
+
+        if not selinux.is_selinux_enabled():
             config.pki_log.error(
                 log.PKIHELPER_SELINUX_DISABLED,
                 extra=config.PKI_INDENTATION_LEVEL_2)
